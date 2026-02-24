@@ -79,7 +79,8 @@ https://dash.cloudflare.com/<ACCOUNT_ID>/workers/services/view/smail-app/product
 ```
 
 ### 设置域名 DNS MX
-**Build** -> **Compute** -> **Email Service** -> **Email Routing** -> **Onboard Domain** -> **Select Zone**（选择域名，此域名需跟部署时**输入的域名**（`Enter the new domain`）一致）-> **Add records and Enable** -> 点击进入此服务的设置 -> **Routing Rules** -> **Catch-all address** -> **Catch All（Edit）** -> **Create custom address**（Action 选择 `Send to a Worker`，Destination 选择 `smail-app`）-> **Save** -> **Status** 点击后，从 `Disabled` 切换至 `Active`。
+
+> Build / Compute / Email Service / Email Routing / Onboard Domain / Select Zone（**选择域名，此域名需跟部署时输入的域名（`Enter the new domain`）一致**）/ Add records and Enable / **点击进入此服务的设置** / Routing Rules / Catch-all address / Catch All（Edit） / Create custom address（**Action 选择 `Send to a Worker`，Destination 选择 `smail-app`**）/ Save -> Status 点击后，从 `Disabled` 切换至 `Active`。
 
 发送邮件至页面创建的临时邮箱，查看是否收到邮件。
 
@@ -110,6 +111,10 @@ Available recipes:
     [kv]
     create-kv kv="smail-kv"                     # 创建 KV 命名空间
     delete-kv kv="smail-kv"                     # 删除 KV 命名空间
+
+    [pages]
+    home action="hide"                          # 用法: just home [hide|show]
+    layout action="hide"                        # 用法: just layout [hide|show]
 
     [r2]
     create-r2 preview="" r2="smail-attachments" # 创建 R2 命名空间
