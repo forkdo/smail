@@ -76,7 +76,7 @@ pnpm run test:email
 pnpm run test:email:custom [收件人] [发件人] [端口] [是否包含附件]
 
 # 例如：
-pnpm run test:email:custom mytest@smail.pw sender@example.com 5173 true
+pnpm run test:email:custom test@yourdomain.com sender@example.com 5173 true
 ```
 
 ### 数据库管理
@@ -126,7 +126,6 @@ pnpm wrangler versions deploy
 
 1. **配置 Cloudflare 服务**:
    - 创建 D1 数据库：`wrangler d1 create smail-database`
-   - 创建 KV 命名空间：`wrangler kv namespace create "smail-kv"`
    - 创建 R2 存储桶：`wrangler r2 bucket create smail-attachments`
    - 设置 Email Routing
 

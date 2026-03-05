@@ -31,14 +31,14 @@ pnpm run db:migrate
 #### 方法一：使用npm脚本（推荐）
 
 ```bash
-# 发送默认测试邮件到 test@smail.pw
+# 发送默认测试邮件
 pnpm run test:email
 
 # 发送自定义测试邮件
 pnpm run test:email:custom [收件人] [发件人] [端口]
 
 # 例如：
-pnpm run test:email:custom mytest@smail.pw sender@example.com 8787
+pnpm run test:email:custom test@yourdomain.com sender@example.com 8787
 ```
 
 #### 方法二：直接运行脚本
@@ -56,14 +56,14 @@ node scripts/test-email.js [收件人] [发件人] [端口]
 ```bash
 curl --request POST 'http://localhost:8787/cdn-cgi/handler/email' \
   --url-query 'from=sender@example.com' \
-  --url-query 'to=test@smail.pw' \
+  --url-query 'to=test@yourdomain.com' \
   --header 'Content-Type: application/json' \
   --data-raw 'Received: from smtp.example.com (127.0.0.1)
         by cloudflare-email.com (unknown) id 4fwwffRXOpyR
-        for <test@smail.pw>; Wed, 04 Jun 2025 15:50:20 +0000
+        for <test@yourdomain.com>; Wed, 04 Jun 2025 15:50:20 +0000
 From: "测试发件人" <sender@example.com>
 Reply-To: sender@example.com
-To: test@smail.pw
+To: test@yourdomain.com
 Subject: 本地开发测试邮件
 Content-Type: text/html; charset="utf-8"
 X-Mailer: Local Test
@@ -194,9 +194,9 @@ pnpm run test:email
 
 ```bash
 # 测试不同类型的邮件
-pnpm run test:email:custom test1@smail.pw sender1@example.com
-pnpm run test:email:custom test2@smail.pw sender2@example.com
-pnpm run test:email:custom test3@smail.pw sender3@example.com
+pnpm run test:email:custom test1@yourdomain.com sender1@example.com
+pnpm run test:email:custom test2@yourdomain.com sender2@example.com
+pnpm run test:email:custom test3@yourdomain.com sender3@example.com
 ```
 
 ## 🚀 部署前测试

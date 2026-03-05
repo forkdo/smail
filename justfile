@@ -3,7 +3,6 @@ init:
   @echo "Initializing the project..."
   @just install
   @just create-d1
-  @just create-kv
   @just create-r2
   @just create-secret
 
@@ -42,7 +41,7 @@ dev:
   @pnpm dev
 
 # 运行测试邮件
-test to="test@smail.pw" from="sender@example.com" port="5173" attachment="":
+test to="test@example.com" from="sender@example.com" port="5173" attachment="":
   @if [[ -n "{{attachment}}" ]]; then \
     attachment=true; \
   fi; \
@@ -70,7 +69,6 @@ deploy:
 preview:
   @echo "Previewing deployment on Cloudflare Workers..."
   @just create-d1 preview
-  @just create-kv
   @just create-r2 preview
   @just domain
   @just db-migrate
@@ -90,7 +88,6 @@ clean:
 destroy:
   @echo "Destroying all resources..."
   @just delete-d1
-  @just delete-kv
   @just delete-r2
   @worker_name=$(jq -r '.name' wrangler.jsonc); \
     if [[ -n "$worker_name" ]]; then \
@@ -143,33 +140,7 @@ delete-d1 db="smail-database":
     pnpm wrangler d1 delete {{db}}-preview -y -c .empty; \
     rm /tmp/cf.empty
 
-# 创建 KV 命名空间
-[group('kv')]
-create-kv kv="smail-kv":
-  @echo "Creating KV namespace..."
-  @touch /tmp/cf.empty; \
-    namespace_id=$(pnpm wrangler -c /tmp/cf.empty kv namespace list | jq -r '.[]|select(.title == "smail-kv").id'); \
-    if [[ -n "$namespace_id" ]]; then \
-      echo "KV namespace 'smail-kv' already exists with ID: $namespace_id. Skipping creation."; \
-    else \
-      echo "KV namespace 'smail-kv' does not exist. Creating..."; \
-      namespace_id=$(pnpm wrangler -c /tmp/cf.empty kv namespace create "{{kv}}" | grep id | cut -d'"' -f4); \
-      echo "KV namespace '$namespace_id' created successfully."; \
-    fi; \
-    jq --arg id "$namespace_id" '.kv_namespaces[0].id = $id' wrangler.jsonc > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 
-# 删除 KV 命名空间
-[group('kv')]
-delete-kv kv="smail-kv":
-  @echo "Deleting KV namespace..."
-  @namespace_id=$(pnpm wrangler kv namespace list | jq -r '.[]|select(.title == "smail-kv").id'); \
-    echo "namespace_id: $namespace_id"; \
-    if [[ -n "$namespace_id" ]]; then \
-      echo yes | pnpm wrangler kv namespace delete --namespace-id "$namespace_id" && \
-      echo "KV namespace '{{kv}}' deleted successfully."; \
-    else \
-      echo "KV namespace '{{kv}}' not found. Skipping deletion."; \
-    fi
 
 # 创建 R2 命名空间
 [group('r2')]
@@ -227,7 +198,7 @@ domain domain="":
       layout_status=$(grep -E '\*\s*<Navigation.*' app/routes/layout.tsx | wc -l); \
       home_status=$(sed -n '391p' app/routes/home.tsx | grep -F "/*" | wc -l); \
       git checkout -- app; \
-      find app -type f -name "*.tsx" -exec sed -i "s#smail.pw#$new_domain#g" {} \;; \
+      find app -type f -name "*.tsx" -exec sed -i "s#yourdomain\.com#$new_domain#g" {} \;; \
       echo "Domain updated in source files."; \
       if [[ $layout_status -eq 1 ]]; then \
         just layout hide; \

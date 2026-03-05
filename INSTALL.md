@@ -102,7 +102,7 @@ Available recipes:
     init                                        # 初始化
     install                                     # 安装依赖库
     preview                                     # 部署至 Cloudflare Workers 预览环境
-    test to="test@smail.pw" from="sender@example.com" port="5173" attachment="" # 运行测试邮件
+    test to="test@yourdomain.com" from="sender@example.com" port="5173" attachment="" # 运行测试邮件
 
     [d1]
     create-d1 preview="" db="smail-database"    # 创建 D1 数据库

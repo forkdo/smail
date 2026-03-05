@@ -92,6 +92,17 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
 	}),
 }));
 
+// Session 表 - 存储用户会话
+export const sessions = sqliteTable(
+	"sessions",
+	{
+		id: text("id").primaryKey(),
+		data: text("data").notNull(),
+		expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+	},
+	(table) => [index("idx_sessions_expires_at").on(table.expiresAt)],
+);
+
 // 导出类型
 export type Mailbox = typeof mailboxes.$inferSelect;
 export type NewMailbox = typeof mailboxes.$inferInsert;
@@ -101,3 +112,6 @@ export type NewEmail = typeof emails.$inferInsert;
 
 export type Attachment = typeof attachments.$inferSelect;
 export type NewAttachment = typeof attachments.$inferInsert;
+
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;
