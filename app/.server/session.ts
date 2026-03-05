@@ -70,8 +70,8 @@ function createD1SessionStorage(): SessionStorage<SessionData, SessionData> {
 
 const storage = createD1SessionStorage();
 
-export const getSession = (request: Request) =>
-	storage.getSession(request.headers.get("Cookie"));
+export const getSession = (cookieHeader: string | null) =>
+	storage.getSession(cookieHeader);
 export const commitSession = (session: Session<SessionData, SessionData>) =>
 	storage.commitSession(session);
 export const destroySession = (session: Session<SessionData, SessionData>) =>

@@ -60,7 +60,6 @@ test to="test@example.com" from="sender@example.com" port="5173" attachment="":
 # 部署至 Cloudflare Workers
 deploy:
   @echo "Deploying to Cloudflare Workers..."
-  @just domain
   @just db-migrate
   
   @just build && pnpm wrangler deploy
@@ -70,7 +69,6 @@ preview:
   @echo "Previewing deployment on Cloudflare Workers..."
   @just create-d1 preview
   @just create-r2 preview
-  @just domain
   @just db-migrate
   @just build && pnpm wrangler versions upload
   @read -p "Do you want to deploy to production environment? (y/n) " deploy_prod; \
@@ -186,71 +184,26 @@ db-migrate:
   @echo "Running database migrations..."
   @echo y | pnpm run db:migrate:remote
 
-# 更新域名
-domain domain="":
-  @echo "Updating domain in source files..."; \
-    new_domain="{{domain}}"; \
-    if [[ -z "{{domain}}" ]]; then \
-      read -p "Enter the new domain: " new_domain; \
-    fi; \
-    if [[ -n "$new_domain" ]]; then \
-      echo "New domain: $new_domain"; \
-      layout_status=$(grep -E '\*\s*<Navigation.*' app/routes/layout.tsx | wc -l); \
-      home_status=$(sed -n '391p' app/routes/home.tsx | grep -F "/*" | wc -l); \
-      git checkout -- app; \
-      find app -type f -name "*.tsx" -exec sed -i "s#yourdomain\.com#$new_domain#g" {} \;; \
-      echo "Domain updated in source files."; \
-      if [[ $layout_status -eq 1 ]]; then \
-        just layout hide; \
-      fi; \
-      if [[ $home_status -eq 1 ]]; then \
-        just home hide; \
-      fi; \
-    else \
-      echo "No domain provided. Skipping domain update."; \
-    fi
-
-# 切换导航栏和底部版权信息的显示/隐藏
-# 用法: just layout [hide|show]
-[group('pages')]
-layout action="hide":
-  @if [ "{{action}}" = "hide" ]; then \
-    echo "Hiding navigation and footer..."; \
-    sed -i 's/^\(\t*\)\(<Navigation currentPath={location.pathname} \/>\)/\1{\/\* \2 \*\/}/' app/routes/layout.tsx; \
-    sed -i 's/^\(\t*\)\(<Footer \/>\)/\1{\/\* \2 \*\/}/' app/routes/layout.tsx; \
-    echo "✅ 已隐藏导航栏和底部版权信息"; \
-  elif [ "{{action}}" = "show" ]; then \
-    echo "Showing navigation and footer..."; \
-    sed -i 's/^\(\t*\){\/\* \(<Navigation currentPath={location.pathname} \/>\) \*\/}/\1\2/' app/routes/layout.tsx; \
-    sed -i 's/^\(\t*\){\/\* \(<Footer \/>\) \*\/}/\1\2/' app/routes/layout.tsx; \
-    echo "✅ 已显示导航栏和底部版权信息"; \
-  else \
-    echo "用法: just nav-footer [hide|show]"; \
-    echo "  hide - 隐藏导航栏和底部版权信息 (默认)"; \
-    echo "  show - 显示导航栏和底部版权信息"; \
+# 设置或更新域名环境变量
+[group('domain')]
+set-domain domain:
+  @echo "Setting DOMAIN environment variable..."
+  @if [[ -z "{{domain}}" ]]; then \
+    echo "Error: domain parameter is required"; \
+    exit 1; \
   fi
-
-# 切换首页 Features 区块的显示/隐藏 (app/routes/home.tsx 391-429 行)
-# 用法: just home [hide|show]
-[group('pages')]
-home action="hide":
-  @home_status=$(sed -n '391p' app/routes/home.tsx | grep -F "/*" | wc -l); \
-    if [ "{{action}}" = "hide" ]; then \
-      if [[ $home_status -eq 1 ]]; then \
-        echo "Home features section is already hidden. Skipping..."; \
-        exit 0; \
-      fi; \
-      echo "Hiding home features section..."; \
-      sed -i '390a\      {/*' app/routes/home.tsx; \
-      sed -i '430a\      */}' app/routes/home.tsx; \
-      echo "✅ 已隐藏首页 Features 区块"; \
-    elif [ "{{action}}" = "show" ]; then \
-      echo "Showing home features section..."; \
-      sed -i '/^[[:space:]]*{\/\*$/d' app/routes/home.tsx; \
-      sed -i '/^[[:space:]]*\*\/}$/d' app/routes/home.tsx; \
-      echo "✅ 已显示首页 Features 区块"; \
+  @echo "Setting DOMAIN to: {{domain}}"
+  @if [[ -f ".dev.vars" ]]; then \
+    sed -i "s/^DOMAIN=.*/DOMAIN={{domain}}/" .dev.vars; \
+    echo "Updated .dev.vars"; \
+  fi
+  @if [[ -f "wrangler.jsonc" ]]; then \
+    if grep -q '"DOMAIN"' wrangler.jsonc; then \
+      sed -i "s/\"DOMAIN\": \".*\"/\"DOMAIN\": \"{{domain}}\"/" wrangler.jsonc; \
     else \
-      echo "用法: just home-features [hide|show]"; \
-      echo "  hide - 隐藏首页 Features 区块 (默认)"; \
-      echo "  show - 显示首页 Features 区块"; \
-    fi
+      jq --arg domain "{{domain}}" '.vars.DOMAIN = $domain' wrangler.jsonc > wrangler.jsonc.tmp; \
+      mv wrangler.jsonc.tmp wrangler.jsonc; \
+    fi; \
+    echo "Updated wrangler.jsonc"; \
+  fi
+  @echo "DOMAIN set to {{domain}}"

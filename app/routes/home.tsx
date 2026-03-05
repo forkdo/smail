@@ -33,6 +33,7 @@ import {
 import type { Route } from "./+types/home";
 
 export function meta(_: Route.MetaArgs) {
+	const domain = typeof window !== "undefined" ? window.location.host : "yourdomain.com";
 	return [
 		{
 			title:
@@ -60,7 +61,7 @@ export function meta(_: Route.MetaArgs) {
 				"保护隐私的免费临时邮箱，无需注册，即时使用，24小时有效，支持附件下载。",
 		},
 		{ property: "og:type", content: "website" },
-		{ property: "og:url", content: "https://yourdomain.com" },
+		{ property: "og:url", content: `https://${domain}` },
 		{ property: "og:site_name", content: "Smail" },
 		{ property: "og:locale", content: "zh_CN" },
 
@@ -90,10 +91,10 @@ export function meta(_: Route.MetaArgs) {
 	];
 }
 
-function generateEmail() {
+function generateEmail(domain: string) {
 	const name = randomName();
 	const random = customAlphabet("0123456789", 4)();
-	return `${name}-${random}@yourdomain.com`;
+	return `${name}-${random}@${domain}`;
 }
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -101,7 +102,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 	let email = session.get("email");
 
 	if (!email) {
-		email = generateEmail();
+		email = generateEmail(context.cloudflare.env.DOMAIN);
 		session.set("email", email);
 		return data(
 			{
@@ -161,7 +162,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 	}
 	if (action === "delete") {
 		const session = await getSession(request.headers.get("Cookie"));
-		session.set("email", generateEmail());
+		session.set("email", generateEmail(context.cloudflare.env.DOMAIN));
 		await commitSession(session);
 		return redirect("/");
 	}
@@ -210,19 +211,18 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 		revalidator.state === "loading" && navigation.state === "idle";
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50">
+		<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
 			<main className="container mx-auto px-4 py-8">
 				<div className="max-w-6xl mx-auto">
 					{/* Hero Section */}
 					<div className="text-center mb-12">
-						<h2 className="text-4xl font-bold text-gray-800 mb-4">
-							保护您的隐私
-							<span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+						<h2 className="text-5xl font-bold mb-4">
+							<span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
 								临时邮箱
 							</span>
 						</h2>
 						<p className="text-lg text-gray-600 max-w-2xl mx-auto">
-							无需注册，即时获取临时邮箱地址。24小时有效期，完全免费，保护您的真实邮箱免受垃圾邮件骚扰。
+							无需注册 • 即时使用 • 24小时有效 • 完全免费
 						</p>
 					</div>
 
@@ -230,34 +230,34 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 						{/* 左侧：邮箱地址 */}
 						<div className="space-y-6">
 							{/* 邮箱地址卡片 */}
-							<Card className="border-0 shadow-lg bg-white h-full">
+							<Card className="border-0 shadow-xl bg-white/90 backdrop-blur h-full">
 								<CardHeader className="pb-4">
 									<CardTitle className="flex items-center space-x-2 text-xl">
-										<div className="bg-blue-600 rounded-lg p-2">
+										<div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl p-2.5 shadow-lg">
 											<Mail className="h-5 w-5 text-white" />
 										</div>
-										<span className="text-gray-800">您的临时邮箱地址</span>
+										<span className="text-gray-800">您的临时邮箱</span>
 									</CardTitle>
 									<div className="flex flex-wrap items-center gap-2 text-sm">
-										<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+										<span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800">
 											✓ 24小时有效
 										</span>
-										<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+										<span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800">
 											⚡ 自动刷新
 										</span>
-										<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+										<span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800">
 											🎁 完全免费
 										</span>
 									</div>
 								</CardHeader>
 								<CardContent>
 									{/* 邮箱地址显示区域 */}
-									<div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-6">
+									<div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-5 border-2 border-blue-200 mb-6 shadow-inner">
 										<div className="text-center">
-											<p className="text-xs text-gray-500 mb-2 font-medium">
+											<p className="text-xs text-gray-600 mb-3 font-medium uppercase tracking-wide">
 												您的专属邮箱地址
 											</p>
-											<span className="font-mono text-base sm:text-lg font-bold text-gray-900 tracking-wide select-all break-all block">
+											<span className="font-mono text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent tracking-wide select-all break-all block">
 												{loaderData.email}
 											</span>
 										</div>
@@ -269,7 +269,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 											text={loaderData.email}
 											size="default"
 											variant="default"
-											className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all"
+											className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all font-medium"
 										/>
 										<Form method="post" className="w-full">
 											<Button
@@ -279,7 +279,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 												name="action"
 												value="delete"
 												disabled={isDeleting}
-												className="w-full h-10 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
+												className="w-full h-11 border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all font-medium"
 											>
 												{isDeleting ? (
 													<>
@@ -294,17 +294,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 									</div>
 
 									{/* Tips */}
-									<div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+									<div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 border-2 border-blue-200">
 										<div className="flex items-start gap-3">
-											<div className="bg-blue-600 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+											<div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-md">
 												<span className="text-white text-sm">💡</span>
 											</div>
 											<div className="text-sm">
-												<p className="font-semibold text-blue-800 mb-1">
+												<p className="font-semibold text-blue-900 mb-1">
 													使用提示
 												</p>
-												<p className="text-blue-700 leading-relaxed">
-													发送邮件到此地址即可在右侧收件箱查看，邮箱24小时后自动过期。收件箱每10秒自动刷新检查新邮件。
+												<p className="text-blue-800 leading-relaxed">
+													发送邮件到此地址即可在右侧收件箱查看，邮箱24小时后自动过期。收件箱每10秒自动刷新。
 												</p>
 											</div>
 										</div>
@@ -315,14 +315,14 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
 						{/* 右侧：收件箱 */}
 						<div>
-							<Card className="h-full">
+							<Card className="h-full border-0 shadow-xl bg-white/90 backdrop-blur">
 								<CardHeader>
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-2">
 											<CardTitle className="flex items-center space-x-2">
 												<span>收件箱</span>
 											</CardTitle>
-											<span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+											<span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md">
 												{loaderData.stats.unread} 未读
 											</span>
 											<span className="text-gray-500 text-xs">
@@ -336,7 +336,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 												name="action"
 												value="refresh"
 												disabled={isRefreshing || isAutoRefreshing}
-												className="text-xs"
+												className="text-xs shadow-md hover:shadow-lg transition-all"
 											>
 												{isRefreshing ? (
 													<>
@@ -353,7 +353,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 										</Form>
 									</div>
 									{isAutoRefreshing && (
-										<div className="text-xs text-blue-600 flex items-center gap-1">
+										<div className="text-xs text-blue-600 flex items-center gap-1 mt-2">
 											<Loader2Icon className="w-3 h-3 animate-spin" />
 											自动刷新中...
 										</div>
@@ -368,61 +368,22 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 												))}
 											</div>
 										) : (
-											<div className="flex flex-col items-center justify-center py-12 text-gray-500 px-4">
-												<div className="text-4xl mb-3">📭</div>
-												<h3 className="text-lg font-semibold mb-2 text-center">
+											<div className="flex flex-col items-center justify-center py-16 text-gray-500 px-4">
+												<div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mb-4 shadow-lg">
+													<span className="text-4xl">📭</span>
+												</div>
+												<h3 className="text-lg font-semibold mb-2 text-center text-gray-800">
 													收件箱为空
 												</h3>
-												<p className="text-sm text-center">
+												<p className="text-sm text-center text-gray-600">
 													您还没有收到任何邮件
 												</p>
-												<p className="text-xs text-gray-400 mt-2 text-center break-all">
-													发送邮件到 {loaderData.email} 来测试
+												<p className="text-xs text-gray-400 mt-3 text-center break-all max-w-xs">
+													发送邮件到 <span className="font-mono text-blue-600">{loaderData.email}</span> 来测试
 												</p>
 											</div>
 										)}
 									</ScrollArea>
-								</CardContent>
-							</Card>
-						</div>
-					</div>
-
-					{/* Features Section */}
-					<div className="mt-16">
-						<div className="text-center mb-8">
-							<h3 className="text-2xl font-bold text-gray-800 mb-2">
-								为什么选择 Smail？
-							</h3>
-							<p className="text-gray-600">
-								专业的临时邮箱服务，保护您的隐私安全
-							</p>
-						</div>
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<Card className="text-center">
-								<CardContent className="pt-6">
-									<div className="text-4xl mb-4">🔒</div>
-									<h4 className="text-lg font-semibold mb-2">隐私保护</h4>
-									<p className="text-gray-600 text-sm">
-										保护您的真实邮箱地址，避免垃圾邮件和隐私泄露
-									</p>
-								</CardContent>
-							</Card>
-							<Card className="text-center">
-								<CardContent className="pt-6">
-									<div className="text-4xl mb-4">⚡</div>
-									<h4 className="text-lg font-semibold mb-2">即时创建</h4>
-									<p className="text-gray-600 text-sm">
-										无需注册，一键生成临时邮箱地址，立即开始使用
-									</p>
-								</CardContent>
-							</Card>
-							<Card className="text-center">
-								<CardContent className="pt-6">
-									<div className="text-4xl mb-4">🌍</div>
-									<h4 className="text-lg font-semibold mb-2">完全免费</h4>
-									<p className="text-gray-600 text-sm">
-										永久免费使用，无隐藏费用，无广告干扰
-									</p>
 								</CardContent>
 							</Card>
 						</div>

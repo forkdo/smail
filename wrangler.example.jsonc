@@ -11,7 +11,9 @@
 			"name": "EMAIL"
 		}
 	],
-
+	"vars": {
+		"DOMAIN": "example.com"
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",

@@ -3,4 +3,7 @@
 
 # Session 密钥 - 用于用户会话加密
 # 使用以下命令生成：openssl rand -base64 32
-SESSION_SECRET=your_session_secret_here_use_openssl_rand_base64_32_to_generate 
+SESSION_SECRET=your_session_secret_here
+
+# 邮箱域名 - 用于生成临时邮箱地址
+DOMAIN=yourdomain.com

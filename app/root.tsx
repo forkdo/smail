@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import type React from "react";
 
 // 全局默认 meta 配置
 export function meta() {
@@ -101,8 +102,8 @@ export const links: Route.LinksFunction = () => [
 	{ rel: "manifest", href: "/site.webmanifest" },
 
 	// SEO 相关
-	{ rel: "canonical", href: "https://yourdomain.com" },
-	{ rel: "alternate", hrefLang: "zh-CN", href: "https://yourdomain.com" },
+	{ rel: "canonical", href: `https://yourdomain.com` },
+	{ rel: "alternate", hrefLang: "zh-CN", href: `https://yourdomain.com` },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -112,7 +113,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 		"@type": "WebApplication",
 		name: "Smail",
 		description: "免费临时邮箱服务，保护隐私，避免垃圾邮件",
-		url: "https://yourdomain.com",
+		url: `https://yourdomain.com`,
 		applicationCategory: "UtilityApplication",
 		operatingSystem: "Any",
 		offers: {
